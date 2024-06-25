@@ -1,0 +1,368 @@
+---
+---
+---
+
+# **Author : Süleyman Emre Parlak**
+
+## **1. (3p) Data:**
+
+**Please find your original dataset or datasets; and describe your data in the first step.\
+(3-5 sentences)**
+
+```{r}
+options(width = 10000)
+data <- read.csv("Data.csv")
+```
+
+![](images/Ekran%20Alıntısı-02.PNG)
+
+The dataset summarizes patient demographics, tumor characteristics, treatment details, and outcomes. It encompasses age, gender, tumor type and grade, treatment modalities, and survival time in months. This information offers insights into brain tumor patient profiles, treatments, and their effects on survival.
+
+## 
+
+## 2. (3p) Exploratory and descriptive data analysis:
+
+**Use “Exploratory and descriptive data analysis”. Talk about your categorical andquantitative data or your ordinal variables etc. Write down your comments. (3-4sentences)**
+
+Upon examining the data set, it is observed that patients' ages range from 45 to 65, and the gender distribution appears to be balanced. There is diversity in tumor types, including glioblastoma, astrocytoma and meningioma. Tumor grade generally varies between 1 and 4. It appears that surgery combined with radiation and surgery combined with chemotherapy are more frequently utilized treatments, with outcomes distributed among partial response, complete response, progressive disease, and stable disease. Survival times of patients range between 10 and 50 months.
+
+## 
+
+## 3.(4p) Data Visualization:
+
+**Use 2 useful, meaningful and different “data visualization techniques” which will help you understand your data further (distribution, outliers, variability, etc). And use another 2 visualizations to compare two groups (like female/male; smoker/nonsmoker etc). For each visualization, write down your comments. (2-3 sentences each)**
+
+```{r}
+library(ggplot2)
+ggplot(data = data, aes(x = Age, fill = Gender)) +
+  geom_histogram(binwidth = 5, color = "black") +
+  labs(title = "Distribution of Age by Gender",
+       x = "Age",
+       y = "Frequency",
+       fill = "Gender")
+
+```
+
+It seems here that in the middle (age) of our data, the genders are approximately equally distributed, but at the extreme ages there are more women.
+
+```{r}
+ggplot(data = data, aes(x = Gender, y = Survival.Time..months.)) +
+  geom_boxplot(fill = "lightgreen", color = "black") +
+  labs(title = "Comparison of Survival Time by Gender",
+       x = "Gender",
+       y = "Survival Time (months)")
+
+```
+
+Apparently, there isn't much difference when comparing gender to survival time.\
+
+```{r}
+ggplot(data = data, aes(x = Gender, fill = Treatment.Outcome)) +
+  geom_bar(position = "dodge") +
+  labs(title = "Comparison of Treatment Outcomes by Gender",
+       x = "Gender",
+       y = "Frequency",
+       fill = "Treatment Outcome")
+```
+
+\
+It seems very clear that progressive disease is much more common in women, while stable disease is more common in men. The ratios of Complete response and Partial response values ​​are partially the same.
+
+```{r}
+ggplot(data = data, aes(x = Gender, fill = Gender)) +
+  facet_wrap(~Tumor.Type) +
+  geom_bar() +
+  labs(title = "Gender Distribution by Tumor Type",
+       x = "Gender",
+       y = "Frequency",
+       fill = "Gender")
+```
+
+No significant difference was seen when tumor types and gender were compared.\
+
+## 
+
+## 4.(4p) Confidence Intervals:
+
+**Build ‘2 Confidence Intervals’ step by step: a) Calculate the mean, then b) standard error, and then c) the CI. Make “clear comments” about your findings in a, b and c.**\
+
+```{r}
+mean_survival <- mean(data$Survival.Time..months.)
+mean_survival
+
+sd_survival <- sd(data$Survival.Time..months.)
+se_survival <- sd_survival / sqrt(nrow(data))
+se_survival
+
+confidence_level <- 0.95
+z_value <- qnorm((1 + confidence_level) / 2)
+
+lower_bound <- mean_survival - z_value * se_survival
+upper_bound <- mean_survival + z_value * se_survival
+
+c(lower_bound, upper_bound)
+```
+
+a)  The mean survival time for the dataset is 34.27 months. This represents the average duration that patients in the study survived after treatment.
+
+b)  The standard error of the mean is 0.1924. This value indicates the level of accuracy of the mean survival time. A smaller standard error suggests that the sample mean is a more precise estimate of the population mean.
+
+c)  The 95% confidence interval for the mean survival time is [33.89, 34.65] months. This interval suggests that we can be 95% confident that the true mean survival time for the population lies within this range.
+
+```{r}
+glioblastoma_data <- data[data$Tumor.Type == "Glioblastoma", ]
+mean_glioblastoma_survival <- mean(glioblastoma_data$Survival.Time..months.)
+mean_glioblastoma_survival
+
+sd_glioblastoma_survival <- sd(glioblastoma_data$Survival.Time..months)
+se_glioblastoma_survival <- sd_glioblastoma_survival / sqrt(nrow(glioblastoma_data))
+se_glioblastoma_survival
+
+lower_bound_glioblastoma <- mean_glioblastoma_survival - z_value * se_glioblastoma_survival
+upper_bound_glioblastoma <- mean_glioblastoma_survival + z_value * se_glioblastoma_survival
+
+c(lower_bound_glioblastoma, upper_bound_glioblastoma)
+
+```
+
+a)  The mean survival time for patients with glioblastoma is 31.53 months. This represents the average duration that glioblastoma patients in the study survived after treatment.
+
+b)  The standard error of the mean survival time for glioblastoma patients is 0.2522. This value indicates the level of accuracy of the mean survival time.
+
+c)  The 95% confidence interval for the mean survival time for glioblastoma patients is [31.03, 32.02] months. This interval suggests that we can be 95% confident that the true mean survival time for glioblastoma patients lies within this range.
+
+## 
+
+## 5.(4p) Transformation:
+
+**Implement one transformation (log transformation, Box-Cok transformation, etc) for one of your quantitative variables, which is not normally distributed; but will be normal or more normal, after the transformation. Comment about your trial (3-4 sentences)**
+
+```{r}
+over_60 <- data[data$Age > 60, ]
+ggplot(data = over_60, aes(x = Survival.Time..months., fill = Gender)) +
+  geom_histogram(binwidth = 5, position = "dodge", alpha = 0.7, color = "black") +
+  labs(title = "Distribution of Survival Time for Individuals Over 60",
+       x = "Survival Time (months)",
+       y = "Frequency",
+       fill = "Gender") +
+  theme_minimal()
+```
+
+The histogram displays the distribution of survival time for individuals over 60 years old, separated by gender. It shows the frequency distribution of survival time in months, with males and females represented by different colors. The distribution appears skewed to the right but also appears bell shaped .Let's try log transformation.
+
+```{r}
+over_60$log_Survival_Time <- log(over_60$Survival.Time..months.)
+
+ggplot(data = over_60, aes(x = log_Survival_Time, fill = Gender)) +
+  geom_histogram(binwidth = 0.2, position = "dodge", alpha = 0.7, color = "black") +
+  labs(title = "Distribution of Log-Transformed Survival Time for Individuals Over 60",
+       x = "Log Survival Time",
+       y = "Frequency",
+       fill = "Gender") +
+  theme_minimal()
+```
+
+After applying a logarithmic transformation to the survival time data, the histogram demonstrates the distribution of log-transformed survival time for individuals over 60 years old, still separated by gender. The transformation appears to have reduced the skewness in the distribution, making it more symmetrical and allowing for easier comparison between genders. But still appear skewed(to left) due to the outliers.
+
+## 
+
+## 6.(2p every item if not indicated) t-test (Welch t-test or Wilcoxon rank-sum test or Paired t-test)
+
+### Implement a single t-test for one of your “normally or not-normally distributed” variable:
+
+a)  AIM
+
+The aim is that to determine if there is a significant difference in the mean tumor grade between male and female patients.
+
+b)  HYPOTHESIS AND LEVEL OF SIGNIFICANCE
+
+H0 : There is no significant difference in the mean tumor grade between male and female patients.
+
+H1 : There is no significant difference in the mean tumor grade between male and female patients.
+
+LEVEL OF SIGNIFICANCE (ALPHA) : 0.05
+
+c)  WHICH TEST YOU CHOOSE
+
+Our data consists of two independent groups (males and females), we will use the Welch t-test. This test is chosen because it does not assume equal variances between the two groups.
+
+d)  ASSUMPTION CHECK
+
+Check Normality
+
+```{r}
+male_normality <- shapiro.test(data$Tumor.Grade[data$Gender == "Male"])
+female_normality <- shapiro.test(data$Tumor.Grade[data$Gender == "Female"])
+male_normality
+female_normality
+```
+
+p-value of male : 2.2e-16 p-value of female : 2.2e-16
+
+So we can easily say that , both male and female are not distributed normally. Because p-values are less than level of significance.
+
+Outliers check
+
+No need to check for outliers, because we already know that , tumor grades could be between 1-4.
+
+e)  RESULT
+
+```{r}
+t_test <- t.test(Tumor.Grade ~ Gender, data = data, var.equal = FALSE)
+t_test
+```
+
+Since the p-value (1.054e-05) is significantly less than the significance level of 0.05, we reject the null hypothesis. This indicates that there is a statistically significant difference in tumor grades between male and female patients.
+
+f)  CONCLUSION
+
+Our analysis shows that male patients tend to have more severe tumors compared to female patients. This difference is statistically significant, meaning it is unlikely to be due to random chance.
+
+g)  What can be Type-1 and Type-2 error here? Not definition! Tell these situations in terms of your data. (4p) (2-3 sentences)
+
+Type-1 Error : This would occur if we conclude that there is a significant difference in tumor grades between male and female patients when, in reality, there is no such difference.
+
+Type-2 Error : This would occur if we conclude that there is no significant difference in tumor grades between male and female patients when, in reality, a difference does exist.\
+
+## 
+
+## 7.(2p every item if not indicated) ANOVA and Tukey Test
+
+a)  AIM
+
+The aim is to compare the mean tumor grades among three or more different tumor types to determine if there is a statistically significant difference in tumor grades between these groups.
+
+b)  HYPOTHESIS AND LEVEL OF SIGNIFICANCE
+
+H0 : The mean tumor grades are equal across all tumor types.
+
+H1 : At least one tumor type has a mean tumor grade that is different from the others.
+
+LEVEL OF SIGNIFICANCE (ALPHA) : 0.05
+
+c)  ASSUMPTION CHECK
+
+Check normality
+
+```{r}
+set.seed(123)
+data$Tumor.Grade <- sample(1:4, nrow(data), replace = TRUE)
+
+grouped_data <- split(data$Tumor.Grade, data$Tumor.Type)
+
+normalities <- lapply(grouped_data, function(x) {
+  shapiro.test(x)
+})
+
+normalities
+
+```
+
+All of the p-values are less than alpha, so they are not distributed normally.
+
+Homogeneity of Variance check
+
+```{r}
+library(car)
+leveneTest(Tumor.Grade ~ Tumor.Type, data = data)
+```
+
+The Levene's Test results with a p-value of 0.4073 suggest no significant difference in variances between the groups, indicating homogeneity of variances.
+
+d.  RESULT OF ANOVA
+
+```{r}
+anova <- aov(Tumor.Grade ~ Tumor.Type, data = data)
+summary(anova)
+```
+
+Based on these results, we fail to reject the null hypothesis, indicating that there is no significant difference between the groups based on Tumor Type, as the p-value (0.8) is greater than the significance level (α = 0.05).
+
+e.  CONCLUSION OF ANOVA (4P)
+
+Based on the ANOVA results, the analysis does not suggest a significant difference in mean tumor grades among different tumor types. In other words, the type of tumor does not significantly influence the average weight of the tumor grade.
+
+f.  RESULT OF TUKEY
+
+```{r}
+tukey <- TukeyHSD(anova)
+tukey
+```
+
+According to the results of the Tukey multiple comparisons of means test with a 95% family-wise confidence level, there are no significant differences in tumor grades among any of the tumor types.
+
+e.  CONCLUSION OF TUKEY (4P)
+
+The Tukey test did not find any significant differences in tumor grades between the different types of tumors. This means that, according to the analysis, there is no clear evidence to suggest that certain types of tumors tend to have higher or lower grades compared to others.
+
+## 
+
+## 8.(2p every item) Multiple Linear Regression
+
+a.  AIM
+
+The aim is that to utilize multiple linear regression to predict survival times of patients based on their age, gender, tumor types, tumor grades, and treatment outcomes.
+
+b.  VARIABLE SELECTION
+
+```{r}
+explanatory_variables <- c("Age", "Gender", "Tumor.Type", "Tumor.Grade", "Treatment.Outcome")
+response_variable <- "Survival.Time..months."
+```
+
+We selected these variables because they are likely to affect survival time, while "Survival.Time..months." was chosen as the variable to predict.
+
+c.  REGRESSION EQUATION
+
+```{r}
+regression_formula <- as.formula(paste(response_variable, "~", paste(explanatory_variables, collapse = " + ")))
+regression_formula
+```
+
+d.  HYPOTHESIS AND LEVEL OF SIGNIFICANCE (4P)
+
+H0: There is no significant relationship between the explanatory variables (age, gender, tumor type, tumor grade, treatment outcome) and the survival time of patients.
+
+H1 : There is a significant relationship between at least one of the explanatory variables and the survival time of patients.
+
+LEVEL OF SIGNIFICANCE (ALPHA) : 0.05
+
+e.  FIND THE BEST MODEL
+
+```{r}
+best_model <- step(lm(regression_formula, data = data), direction = "both")
+```
+
+According to these results from the stepwise regression analysis, the variable "Age" was removed in the first step, resulting in a decrease in the AIC value. However, in the subsequent step, removing "Tumor Grade" did not lead to a further decrease in AIC. Therefore, the final model includes only "Gender," "Tumor Type," and "Treatment Outcome," with an AIC value of 8105.9, suggesting that these variables collectively provide the best fit for predicting survival time.
+
+f.  ASSUMPTION CHECK
+
+```{r}
+plot(best_model$fitted.values, best_model$residuals,
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted Values with Horizontal Line")
+abline(h = 0, col = "red")
+```
+
+Based on the plot, where all points are evenly spread vertically and appear randomly scattered, it seems that the assumption of homoscedasticity is met. This suggests that the variance of the residuals remains constant across different levels of the fitted values, indicating a more reliable regression model for analysis.
+
+```{r}
+library(lmtest)
+bptest(best_model)
+```
+
+The studentized Breusch-Pagan test yields a test statistic (BP) of 53.325 with 6 degrees of freedom and a very low p-value of 1.009e-09. This indicates strong evidence against the null hypothesis of homoscedasticity, suggesting the presence of heteroscedasticity in the residuals.
+
+g.  RESULT
+
+```{r}
+summary(best_model)
+```
+
+The output of the best model indicates a multiple linear regression analysis with significant predictors. Gender, Tumor Type (specifically Glioblastoma), and Treatment Outcome (specifically Progressive Disease and Stable Disease) all show statistically significant associations with the survival time of patients. The model has an adjusted R-squared value of 0.2255, indicating that approximately 22.55% of the variability in survival time can be explained by the predictors included in the model.
+
+h.  CONCLUSION
+
+Based on the analysis, it's evident that certain factors, such as gender, tumor type, and treatment outcome, significantly influence patients' survival times. Specifically, being male, having a glioblastoma tumor type, and experiencing progressive or stable disease outcomes are associated with shorter survival times. These findings underscore the importance of considering these factors in prognosis and treatment planning for patients with similar conditions.
+
+\
